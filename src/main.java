@@ -2,12 +2,13 @@ import java.util.Scanner;
 
 public class main {
 
+    static Scanner in = new Scanner(System.in);
+
     public static void main(String[] args){
 
-//        Scanner in = new Scanner(System.in);
-//        System.out.printf("Gracz1 (czarne) - podaj imię: ");
+//        System.out.printf("Gracz1 (białe) - podaj imię: ");
 //        String gracz1 = in.next();
-//        System.out.printf("Gracz2 (białe) - podaj imię: ");
+//        System.out.printf("Gracz2 (czarne) - podaj imię: ");
 //        String gracz2 = in.next();
 
         long czarne_piony_1 = 0;
@@ -17,7 +18,7 @@ public class main {
 
         //rozdanie czarnych
         //współrzędna y
-        for(int i=5; i<=7; i++){
+        for(int i=0; i<=2; i++){
             //współrzędna x
             for(int j=0; j<=7; j++){
                 //czarne pole, wstawiamy pionek
@@ -50,7 +51,7 @@ public class main {
 
         //rozdanie białych
         //współrzędna y
-        for(int i=0; i<=2; i++){
+        for(int i=5; i<=7; i++){
             //współrzędna x
             for(int j=0; j<=7; j++){
                 //czarne pole, wstawiamy pionek
@@ -81,14 +82,47 @@ public class main {
             }
         }
 
-        wydrukuj_plansze(czarne_piony_1, czarne_piony_2, biale_piony_1, biale_piony_2);
 
+
+        int kolej_gracza = 1;
+
+        while(true){
+
+            //sprawdzić czy gracz ma ruch do wykonania i czy ma obowiązkowe bicie
+            //czy ma ruch - czy ma pion, który może się jakkolwiek ruszyć lub bić
+            //jak nie ma ruchu, koniec gry, wygrywa drugi gracz
+
+            //wydrukować planszę, poinformować o kolejce
+            wydrukuj_plansze(czarne_piony_1, czarne_piony_2, biale_piony_1, biale_piony_2);
+            System.out.println("Kolej gracza "+kolej_gracza);
+
+
+            //pobrać ruch zaproponowany przez gracza
+            System.out.println("Który pion chcesz podnieść?");
+            int wybrany_pion = wybierz_pole();
+            System.out.println("Gdzie chcesz go przesunąć?");
+            int pole_docelowe = wybierz_pole();
+
+            switch(kolej_gracza){
+                case 1:
+                    break;
+                case 2:
+                    break;
+            }
+
+            //sprawdzić czy ruch jest dozwolony (uwzględnić obowiązkowe bicie)
+
+            //wykonać ruch lub powtórzyć pętlę dla gracza
+
+        }
     }
 
     public static void wydrukuj_plansze(long czarne_piony_1, long czarne_piony_2, long biale_piony_1, long biale_piony_2){
-        //wsp x
+        //wsp y
+        System.out.println("  1 2 3 4 5 6 7 8");
         for(int i=7; i>=0; i--){
-            //wsp y
+            //wsp x
+            System.out.print((i+1)+" ");
             for(int j=0; j<=7; j++){
                 int obecne_pole = i;
                 obecne_pole = (obecne_pole << 3) + j;
@@ -118,17 +152,18 @@ public class main {
                 if(wydrukowane == false){
                     switch((i+j)%2){
                         case 0:
-                            System.out.print("\u2B1C"); //czarne pole
+                            System.out.print("\u2B1C "); //czarne pole
                             break;
                         case 1:
-                            System.out.print("\u2B1B"); //białe pole
+                            System.out.print("\u2B1B "); //białe pole
                             break;
                     }
                 }
             }
             //koniec linii, drukujemy linebreak
-            System.out.println();
+            System.out.println((i+1));
         }
+        System.out.println("  1 2 3 4 5 6 7 8");
     }
 
     public static boolean wydrukuj_pion(long piony, int pole){
@@ -141,19 +176,19 @@ public class main {
                 //sprawdzenie figury
                 switch( (int)((piony >> (9*k)) >>6) & 0b111) {
                     case 0b110:
-                        System.out.print("\u265B"); //czarna damka
+                        System.out.print("\u265B "); //czarna damka
                         wydrukowane = true;
                         break;
                     case 0b100:
-                        System.out.print("\u265F"); //czarny pion
+                        System.out.print("\u265F "); //czarny pion
                         wydrukowane = true;
                         break;
                     case 0b111:
-                        System.out.print("\u2655"); //biała damka
+                        System.out.print("\u2655 "); //biała damka
                         wydrukowane = true;
                         break;
                     case 0b101:
-                        System.out.print("\u2659"); //biały pion
+                        System.out.print("\u2659 "); //biały pion
                         wydrukowane = true;
                         break;
                     //zostaje zbity pion. jego nie drukujemy, szukamy dalej piona o tych współrzędnych, który jest w grze.
@@ -161,6 +196,50 @@ public class main {
             }
         }
         return wydrukowane;
+    }
+
+    public static int wybierz_pole(){
+        int wybrane_pole = 0;
+
+        //pobranie wsp. y
+        while(true){
+            try{
+                System.out.print("Podaj współrzędną Y (1-8): ");
+                int podana_wartosc = in.nextInt();
+
+                if(podana_wartosc > 0 & podana_wartosc < 9){
+                    wybrane_pole = podana_wartosc-1;
+                    wybrane_pole = wybrane_pole << 3;
+                    break;
+                } else {
+                    System.out.println("Podana wartość nie mieści się w przedziale 1-8. Spróbuj ponownie.");
+                }
+            } catch(Exception e){
+                System.out.println("Podana wartości nie jest liczbą całkowitą. Spróbuj ponownie.");
+                in.nextLine();
+                continue;
+            }
+        }
+
+        //pobranie wsp. x
+        while(true){
+            try{
+                System.out.print("Podaj współrzędną X (1-8): ");
+                int podana_wartosc = in.nextInt();
+
+                if(podana_wartosc > 0 & podana_wartosc < 9){
+                    wybrane_pole += podana_wartosc-1;
+                    break;
+                } else {
+                    System.out.println("Podana wartość nie mieści się w przedziale 1-8. Spróbuj ponownie.");
+                }
+            } catch(Exception e){
+                System.out.println("Podana wartości nie jest liczbą całkowitą. Spróbuj ponownie.");
+                in.nextLine();
+                continue;
+            }
+        }
+        return wybrane_pole;
     }
 
 }
