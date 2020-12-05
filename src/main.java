@@ -81,6 +81,11 @@ public class main {
             }
         }
 
+        wydrukuj_plansze(czarne_piony_1, czarne_piony_2, biale_piony_1, biale_piony_2);
+
+    }
+
+    public static void wydrukuj_plansze(long czarne_piony_1, long czarne_piony_2, long biale_piony_1, long biale_piony_2){
         //wsp x
         for(int i=7; i>=0; i--){
             //wsp y
@@ -90,86 +95,23 @@ public class main {
                 boolean wydrukowane = false;
 
                 //spr czarne_piony_1
-                for(int k=0; k<6; k++){
-                    //ostatnie 6 bitów - pozycja piona == obecne pole
-                    if(((czarne_piony_1 >> (9*k) & 0b111111)) == obecne_pole){
-                        //sprawdzenie figury (kolor czarny)
-                        switch( (int)((czarne_piony_1 >> (9*k)) >>6) & 0b111){
-                            case 0b110:
-                                System.out.print("\u265B"); //czarna damka
-                                wydrukowane = true;
-                                break;
-                            case 0b100:
-                                System.out.print("\u265F"); //czarny pion
-                                wydrukowane = true;
-                                break;
-                            //zostaje zbity pion. jego nie drukujemy, szukamy dalej piona o tych współrzędnych, który jest w grze.
-                        }
-
-                    }
-                }
+                wydrukowane = wydrukuj_pion(czarne_piony_1, obecne_pole);
 
                 //spr czarne_piony_2
                 if(wydrukowane == false){
-                    for(int k=0; k<6; k++){
-                        //ostatnie 6 bitów - pozycja piona == obecne pole
-                        if(((czarne_piony_2 >> (9*k) & 0b111111)) == obecne_pole){
-                            //sprawdzenie figury (kolor czarny)
-                            switch( (int)((czarne_piony_2 >> (9*k)) >>6) & 0b111) {
-                                case 0b110:
-                                    System.out.print("\u265B"); //czarna damka
-                                    wydrukowane = true;
-                                    break;
-                                case 0b100:
-                                    System.out.print("\u265F"); //czarny pion
-                                    wydrukowane = true;
-                                    break;
-                                //zostaje zbity pion. jego nie drukujemy, szukamy dalej piona o tych współrzędnych, który jest w grze.
-                            }
-                        }
-                    }
+                    wydrukowane = wydrukuj_pion(czarne_piony_2, obecne_pole);
                 } else continue; //pole wydrukowane, idziemy dalej
 
                 // spr biale_piony_1
                 if(wydrukowane == false){
-                    for(int k=0; k<6; k++){
-                        //ostatnie 6 bitów - pozycja piona == obecne pole
-                        if(((biale_piony_1 >> (9*k) & 0b111111)) == obecne_pole){
-                            //sprawdzenie figury (kolor biały)
-                            switch( (int)((biale_piony_1 >> (9*k)) >>6) & 0b111) {
-                                case 0b111:
-                                    System.out.print("\u2655"); //biała damka
-                                    wydrukowane = true;
-                                    break;
-                                case 0b101:
-                                    System.out.print("\u2659"); //biały pion
-                                    wydrukowane = true;
-                                    break;
-                                //zostaje zbity pion. jego nie drukujemy, szukamy dalej piona o tych współrzędnych, który jest w grze.
-                            }
-                        }
-                    }
+                    wydrukowane = wydrukuj_pion(biale_piony_1, obecne_pole);
                 } else continue; //pole wydrukowane, idziemy dalej
 
                 // spr biale_piony_2
                 if(wydrukowane == false){
-                    for(int k=0; k<6; k++){
-                        //ostatnie 6 bitów - pozycja piona == obecne pole
-                        if(((biale_piony_2 >> (9*k) & 0b111111)) == obecne_pole){
-                            //sprawdzenie figury (kolor biały)
-                            switch( (int)((biale_piony_2 >> (9*k)) >>6) & 0b111) {
-                                case 0b111:
-                                    System.out.print("\u2655"); //biała damka
-                                    wydrukowane = true;
-                                    break;
-                                case 0b101:
-                                    System.out.print("\u2659"); //biały pion
-                                    wydrukowane = true;
-                                    break;
-                                //zostaje zbity pion. jego nie drukujemy, szukamy dalej piona o tych współrzędnych, który jest w grze.
-                            }
-                        }
-                    }
+                    if(wydrukowane == false){
+                        wydrukowane = wydrukuj_pion(biale_piony_2, obecne_pole);
+                    } else continue; //pole wydrukowane, idziemy dalej
                 } else continue; //pole wydrukowane, idziemy dalej
 
                 //żadna figura nie była wydrukowana - puste pole
@@ -187,26 +129,38 @@ public class main {
             //koniec linii, drukujemy linebreak
             System.out.println();
         }
-
-
-//        long test = 0b1100001001;
-//        test = test & 0b1111111000;
-//        test = test | 0b0000000010;
-
-//
-//
-//        for(int i=0; i<8; i++){
-//            for(int j=0; j<8; j++){
-//
-//            }
-//        }
-
-//        System.out.println("\u2b1b");
-//        System.out.println("\u2b1c");
-//        System.out.println("\u2659");
-//        System.out.println("\u2659");
-//        System.out.println("\u265F");
-//        System.out.println("\u2655");
-//        System.out.println("\u265B");
     }
+
+    public static boolean wydrukuj_pion(long piony, int pole){
+        boolean wydrukowane = false;
+        for(int k=0; k<6; k++){
+
+            //ostatnie 6 bitów - pozycja piona == obecne pole
+            if(((piony >> (9*k) & 0b111111)) == pole){
+
+                //sprawdzenie figury
+                switch( (int)((piony >> (9*k)) >>6) & 0b111) {
+                    case 0b110:
+                        System.out.print("\u265B"); //czarna damka
+                        wydrukowane = true;
+                        break;
+                    case 0b100:
+                        System.out.print("\u265F"); //czarny pion
+                        wydrukowane = true;
+                        break;
+                    case 0b111:
+                        System.out.print("\u2655"); //biała damka
+                        wydrukowane = true;
+                        break;
+                    case 0b101:
+                        System.out.print("\u2659"); //biały pion
+                        wydrukowane = true;
+                        break;
+                    //zostaje zbity pion. jego nie drukujemy, szukamy dalej piona o tych współrzędnych, który jest w grze.
+                }
+            }
+        }
+        return wydrukowane;
+    }
+
 }
