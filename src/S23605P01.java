@@ -645,9 +645,192 @@ public
         return -1;
     }
 
-    public static boolean czy_bicie_pion(int pion){
+    public static boolean czy_ruch_na_puste(int pion){
+
+        //czy pion jest w grze
+        if((pion >> 8 & 0b1) != 0){
+            //wyciągamy pole
+            int pole_piona_1 = pion & 0b111111;
+            int wspx_piona = pole_piona_1 & 0b111;
+            int wspy_piona = (pole_piona_1 >> 3) & 0b111;
+
+            //sprawdzamy czy pion
+            if((pion >> 7 & 0b1) == 0){
+                int sprawdzane_pole;
+                int wartosc_sprawdzanego_pola;
+
+                //czarne, ruch w góre
+                if((pion >> 6 & 0b1) == 0){
+                    //sprawdzamy lewy skos w gore
+                    //sprawdzamy, czy nie wychodzi poza plansze
+                    if(!((wspy_piona+1 > 7) | (wspx_piona-1<0))) {
+                        sprawdzane_pole = ((wspy_piona + 1) << 3) + wspx_piona - 1;
+                        wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
+
+                        if (wartosc_sprawdzanego_pola == -1) {
+                            //jesli pole puste, mamy mozliwy ruch
+                            return true;
+                        }
+                    }
+                    //sprawdzamy prawy skos w gore
+                    //sprawdzamy, czy nie wychodzi poza plansze
+                    if(!((wspy_piona+1 > 7) | (wspx_piona+1 > 7))){
+                        sprawdzane_pole = ((wspy_piona+1) << 3) + wspx_piona+1;
+                        wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
+
+                        if(wartosc_sprawdzanego_pola == -1){
+                            //jesli pole puste, mamy mozliwy ruch
+                            return true;
+                        }
+                    }
+
+                }
+                else {
+                    //białe, ruch w dół
+
+                    //sprawdzamy lewy skos w dol
+                    //sprawdzamy, czy nie wychodzi poza plansze
+                    if(!((wspy_piona-1 < 0) | (wspx_piona-1 < 0))){
+                        sprawdzane_pole = ((wspy_piona-1) << 3) + wspx_piona-1;
+                        wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
+
+                        if(wartosc_sprawdzanego_pola == -1){
+                            //jesli pole puste, mamy mozliwy ruch
+                            return true;
+                        }
+                    }
+
+                    //sprawdzamy prawy skos w dol
+                    //sprawdzamy, czy nie wychodzi poza plansze
+                    if(!((wspy_piona-1 < 0) | (wspx_piona+1 > 7))){
+                        sprawdzane_pole = ((wspy_piona-1) << 3) + wspx_piona+1;
+                        wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
+
+                        if(wartosc_sprawdzanego_pola == -1){
+                            //jesli pole puste, mamy mozliwy ruch
+                            return true;
+                        }
+                    }
+                }
+            }
+            else {
+                //sprawdzamy czy bicie dla damki
+                //TODO
+            }
+        }
+        //pion poza grą lub nie ma ruchu
+        return false;
+    }
+
+    public static boolean czy_bicie_pion(int pion, int kolor_przeciwnika){
+        if((pion >> 8 & 0b1) != 0){
+            //wyciągamy pole
+            int pole_piona_1 = pion & 0b111111;
+            int wspx_piona = pole_piona_1 & 0b111;
+            int wspy_piona = (pole_piona_1 >> 3) & 0b111;
+
+            //sprawdzamy czy pion
+            if((pion >> 7 & 0b1) == 0){
+                //sprawdzamy czy bicie dla piona
+                int sprawdzane_pole;
+                int wartosc_sprawdzanego_pola;
+
+                //sprawdzamy lewy skos w gore
+                //sprawdzamy, czy nie wychodzi poza plansze
+                if(!((wspy_piona+1 > 7) | (wspx_piona-1<0))){
+                    sprawdzane_pole = ((wspy_piona+1) << 3) + wspx_piona-1;
+                    wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
+
+                    if(wartosc_sprawdzanego_pola != -1){
+                        //sprawdzamy czy kolor piona zajmujacego miejsce jest kolorem przeciwnika
+                        if((wartosc_sprawdzanego_pola >> 5 & 0b1) == kolor_przeciwnika){
+                            //sprawdzamy czy kolejne pole za nim jest puste.
+                            if(!((wspy_piona+2 > 7) | (wspx_piona-2<0))) {
+                                sprawdzane_pole = ((wspy_piona + 2) << 3) + wspx_piona - 2;
+                                wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
+                                if(wartosc_sprawdzanego_pola == -1){
+                                    //mamy mus bicia
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //sprawdzamy lewy skos w dol
+                //sprawdzamy, czy nie wychodzi poza plansze
+                if(!((wspy_piona-1 < 0) | (wspx_piona-1<0))){
+                    sprawdzane_pole = ((wspy_piona-1) << 3) + wspx_piona-1;
+                    wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
+
+                    if(wartosc_sprawdzanego_pola != -1){
+                        //sprawdzamy czy kolor piona zajmujacego miejsce jest kolorem przeciwnika
+                        if((wartosc_sprawdzanego_pola >> 5 & 0b1) == kolor_przeciwnika){
+                            //sprawdzamy czy kolejne pole za nim jest puste.
+                            if(!((wspy_piona-2 < 0) | (wspx_piona-2<0))) {
+                                sprawdzane_pole = ((wspy_piona - 2) << 3) + wspx_piona - 2;
+                                wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
+                                if(wartosc_sprawdzanego_pola == -1){
+                                    //mamy mus bicia
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //sprawdzamy prawy skos w gore
+                //sprawdzamy, czy nie wychodzi poza plansze
+                if(!((wspy_piona+1 > 7) | (wspx_piona+1 > 7))){
+                    sprawdzane_pole = ((wspy_piona+1) << 3) + wspx_piona+1;
+                    wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
+
+                    if(wartosc_sprawdzanego_pola != -1){
+                        //sprawdzamy czy kolor piona zajmujacego miejsce jest kolorem przeciwnika
+                        if((wartosc_sprawdzanego_pola >> 5 & 0b1) == kolor_przeciwnika){
+                            //sprawdzamy czy kolejne pole za nim jest puste.
+                            if(!((wspy_piona+2 > 7) | (wspx_piona+2 > 7))) {
+                                sprawdzane_pole = ((wspy_piona + 2) << 3) + wspx_piona + 2;
+                                wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
+                                if(wartosc_sprawdzanego_pola == -1){
+                                    //mamy mus bicia
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //sprawdzamy prawy skos w dol
+                //sprawdzamy, czy nie wychodzi poza plansze
+
+                if(!((wspy_piona-1 < 0) | (wspx_piona+1 > 7))){
+                    sprawdzane_pole = ((wspy_piona-1) << 3) + wspx_piona+1;
+                    wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
+
+                    if(wartosc_sprawdzanego_pola == -1){
+                        //sprawdzamy czy kolor piona zajmujacego miejsce jest kolorem przeciwnika
+                        if((wartosc_sprawdzanego_pola >> 5 & 0b1) == kolor_przeciwnika){
+                            //sprawdzamy czy kolejne pole za nim jest puste.
+                            if(!((wspy_piona+2 > 7) | (wspx_piona+2 > 7))) {
+                                sprawdzane_pole = ((wspy_piona - 2) << 3) + wspx_piona + 2;
+                                wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
+                                if(wartosc_sprawdzanego_pola == -1){
+                                    //mamy mus bicia
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
 
 
+            } else {
+                //sprawdzamy czy bicie dla damki
+                //TODO
+            }
+
+        }
         return false;
     }
 }
