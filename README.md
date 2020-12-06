@@ -1,3 +1,6 @@
+projekt nie jest skończony. zabrałem się do niego 2 dni przed terminem naiwnie wierząc, że umiem programować.
+mam nauczkę.
+
 # ppj-projekt01
 
 Wszystkie zasady gry, cel jak i wielkość planszy opisuje wikipedia. Zaimplementuj
