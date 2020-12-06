@@ -1,6 +1,26 @@
 import java.util.Scanner;
 import java.lang.Math;
 
+/*
+Projekt nie jest skończony :(
+
+Brakuje:
+    > zamiany w damkę
+    > weryfikacji, czy damka ma ruch lub bicie
+    > ponowienia bicia jeśli jest dostępne (trudnością było wymuszenie bicia dla tego samego piona -
+        wielokrotne bicie wykonać można tylko tym samym pionem
+    > uwzględnienia remisów
+
+Działa (a przynajmniej taką mam nadzieję):
+    > rozdanie i rozstawienie pionów
+    > weryfikacja czy jest mus bicia lub czy jest możliwy ruch
+        (z uwzględnieniem braku możliwości wyjścia poza planszę)
+    > ruchy na puste pola dla pionów
+    > bicia dla pionów
+    > wyłonienie zwycięzcy
+
+ */
+
 public
     class S23605P01 {
 
@@ -12,7 +32,6 @@ public
     static long biale_piony_2 = 0;
 
     public static void main(String[] args){
-
 
 
         System.out.print("Gracz pierwszy (białe) - podaj imię: ");
@@ -88,7 +107,7 @@ public
 
         //rozpoczyna gracz 1, nie zmieniamy gracza, przeciwnik jest czarny
         int kolej_gracza = 1;
-        boolean zmiana_gracza = true;
+        boolean ten_sam_gracz = true;
         int kolor_przeciwnika = 0;
 
         //pętla gry
@@ -102,7 +121,7 @@ public
             boolean mozliwy_ruch = false;
 
             //zmiana gracza (jeśli nie ma powtórzenia bicia)
-            if(!zmiana_gracza){
+            if(!ten_sam_gracz){
                 //określenie koloru przeciwnika (do bić)
                 switch(kolej_gracza) {
                     case 1:
@@ -116,7 +135,7 @@ public
                 }
             }
 
-            //loop dla każdego piona. TODO weryfikacja damek
+            //loop dla każdego piona.
             for(int i=0; i<7; i++){
                 //jeśli jest mus bicia, możemy przerwać pętlę - na pewno jest ruch
                 if(mus_bicia) break;
@@ -131,250 +150,25 @@ public
                     pion_2 = (int)(czarne_piony_2 >> (9*i) & 0b111111111);
                 }
 
-                //weryfikacja dla pion_1
-                //sprawdzamy stan piona
-                if((pion_1 >> 8 & 0b1) != 0){
-                    //wyciągamy pole
-                    int pole_piona_1 = pion_1 & 0b111111;
-                    int wspx_piona = pole_piona_1 & 0b111;
-                    int wspy_piona = (pole_piona_1 >> 3) & 0b111;
+                mus_bicia = czy_bicie(pion_1, kolor_przeciwnika);
+                //jeśli mus bicia jest już ustalony, nie ma potrzeby weryfikacji, przerywamy pętlę
+                if(!mus_bicia) mus_bicia = czy_bicie(pion_2, kolor_przeciwnika);
+                else break;
+                //jeśli ruch jest już możliwy dla jakiegoś piona, nie ma potrzeby dalszej weryfikacji
+                if(!mozliwy_ruch) mozliwy_ruch = czy_ruch_na_puste(pion_1);
+                if(!mozliwy_ruch) mozliwy_ruch = czy_ruch_na_puste(pion_2);
+            }
 
-                    //sprawdzamy czy pion
-                    if((pion_1 >> 7 & 0b1) == 0){
-                        //sprawdzamy czy bicie dla piona
-                        int sprawdzane_pole;
-                        int wartosc_sprawdzanego_pola;
-
-                        //sprawdzamy lewy skos w gore
-                        //sprawdzamy, czy nie wychodzi poza plansze
-                        if(!((wspy_piona+1 > 7) | (wspx_piona-1<0))){
-                            sprawdzane_pole = ((wspy_piona+1) << 3) + wspx_piona-1;
-                            wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-
-                            if(wartosc_sprawdzanego_pola == -1){
-                                //jesli pole puste, mamy mozliwy ruch
-                                mozliwy_ruch = true;
-                            } else {
-                                //sprawdzamy czy kolor piona zajmujacego miejsce jest kolorem przeciwnika
-                                if((wartosc_sprawdzanego_pola >> 5 & 0b1) == kolor_przeciwnika){
-                                    //sprawdzamy czy kolejne pole za nim jest puste.
-                                    if(!((wspy_piona+2 > 7) | (wspx_piona-2<0))) {
-                                        sprawdzane_pole = ((wspy_piona + 2) << 3) + wspx_piona - 2;
-                                        wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-                                        if(wartosc_sprawdzanego_pola == -1){
-                                            //mamy mus bicia
-                                            mus_bicia = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        //sprawdzamy lewy skos w dol
-                        //sprawdzamy, czy nie wychodzi poza plansze
-                        if(!((wspy_piona-1 < 0) | (wspx_piona-1<0))){
-                            sprawdzane_pole = ((wspy_piona-1) << 3) + wspx_piona-1;
-                            wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-
-                            if(wartosc_sprawdzanego_pola == -1){
-                                //jesli pole puste, mamy mozliwy ruch
-                                mozliwy_ruch = true;
-                            } else {
-                                //sprawdzamy czy kolor piona zajmujacego miejsce jest kolorem przeciwnika
-                                if((wartosc_sprawdzanego_pola >> 5 & 0b1) == kolor_przeciwnika){
-                                    //sprawdzamy czy kolejne pole za nim jest puste.
-                                    if(!((wspy_piona-2 < 0) | (wspx_piona-2<0))) {
-                                        sprawdzane_pole = ((wspy_piona - 2) << 3) + wspx_piona - 2;
-                                        wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-                                        if(wartosc_sprawdzanego_pola == -1){
-                                            //mamy mus bicia
-                                            mus_bicia = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        //sprawdzamy prawy skos w gore
-                        //sprawdzamy, czy nie wychodzi poza plansze
-                        if(!((wspy_piona+1 > 7) | (wspx_piona+1 > 7))){
-                            sprawdzane_pole = ((wspy_piona+1) << 3) + wspx_piona+1;
-                            wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-
-                            if(wartosc_sprawdzanego_pola == -1){
-                                //jesli pole puste, mamy mozliwy ruch
-                                mozliwy_ruch = true;
-                            } else {
-                                //sprawdzamy czy kolor piona zajmujacego miejsce jest kolorem przeciwnika
-                                if((wartosc_sprawdzanego_pola >> 5 & 0b1) == kolor_przeciwnika){
-                                    //sprawdzamy czy kolejne pole za nim jest puste.
-                                    if(!((wspy_piona+2 > 7) | (wspx_piona+2 > 7))) {
-                                        sprawdzane_pole = ((wspy_piona + 2) << 3) + wspx_piona + 2;
-                                        wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-                                        if(wartosc_sprawdzanego_pola == -1){
-                                            //mamy mus bicia
-                                            mus_bicia = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        //sprawdzamy prawy skos w dol
-                        //sprawdzamy, czy nie wychodzi poza plansze
-
-                        if(!((wspy_piona-1 < 0) | (wspx_piona+1 > 7))){
-                            sprawdzane_pole = ((wspy_piona-1) << 3) + wspx_piona+1;
-                            wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-
-                            if(wartosc_sprawdzanego_pola == -1){
-                                //jesli pole puste, mamy mozliwy ruch
-                                mozliwy_ruch = true;
-                            } else {
-                                //sprawdzamy czy kolor piona zajmujacego miejsce jest kolorem przeciwnika
-                                if((wartosc_sprawdzanego_pola >> 5 & 0b1) == kolor_przeciwnika){
-                                    //sprawdzamy czy kolejne pole za nim jest puste.
-                                    if(!((wspy_piona+2 > 7) | (wspx_piona+2 > 7))) {
-                                        sprawdzane_pole = ((wspy_piona - 2) << 3) + wspx_piona + 2;
-                                        wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-                                        if(wartosc_sprawdzanego_pola == -1){
-                                            //mamy mus bicia
-                                            mus_bicia = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-
-                    } else {
-                        //sprawdzamy czy bicie dla damki
-                        //TODO
-                    }
-
+            //brak ruchu, brak bicia, wygrywa przeciwnik
+            if(!mozliwy_ruch & !mus_bicia){
+                System.out.println("Koniec gry!");
+                switch(kolor_przeciwnika){
+                    case 0:
+                        System.out.println("Wygrały czarne!");
+                        break;
+                    case 1:
+                        System.out.println("Wygrały białe!");
                 }
-
-                //to samo dla pion_2, sprawdzamy stan
-                if((pion_2 >> 8 & 0b1) != 0){
-                    //wyciągamy pole
-                    int pole_piona_2 = pion_2 & 0b111111;
-                    int wspx_piona = pole_piona_2 & 0b111;
-                    int wspy_piona = (pole_piona_2 >> 3) & 0b111;
-
-                    //sprawdzamy czy pion
-                    if((pion_2 >> 7 & 0b1) == 0){
-                        //sprawdzamy czy bicie dla piona
-                        int sprawdzane_pole;
-                        int wartosc_sprawdzanego_pola;
-
-                        //sprawdzamy lewy skos w gore
-                        //sprawdzamy, czy nie wychodzi poza plansze
-                        if(!((wspy_piona+1 > 7) | (wspx_piona-1<0))){
-                            sprawdzane_pole = ((wspy_piona+1) << 3) + wspx_piona-1;
-                            wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-
-                            if(wartosc_sprawdzanego_pola == -1){
-                                //jesli pole puste, mamy mozliwy ruch
-                                mozliwy_ruch = true;
-                            } else {
-                                //sprawdzamy czy kolor piona zajmujacego miejsce jest kolorem przeciwnika
-                                if((wartosc_sprawdzanego_pola >> 5 & 0b1) == kolor_przeciwnika){
-                                    //sprawdzamy czy kolejne pole za nim jest puste.
-                                    if(!((wspy_piona+2 > 7) | (wspx_piona-2<0))) {
-                                        sprawdzane_pole = ((wspy_piona + 2) << 3) + wspx_piona - 2;
-                                        wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-                                        if(wartosc_sprawdzanego_pola == -1){
-                                            //mamy mus bicia
-                                            mus_bicia = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        //sprawdzamy lewy skos w dol
-                        //sprawdzamy, czy nie wychodzi poza plansze
-                        if(!((wspy_piona-1 < 0) | (wspx_piona-1<0))){
-                            sprawdzane_pole = ((wspy_piona-1) << 3) + wspx_piona-1;
-                            wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-
-                            if(wartosc_sprawdzanego_pola == -1){
-                                //jesli pole puste, mamy mozliwy ruch
-                                mozliwy_ruch = true;
-                            } else {
-                                //sprawdzamy czy kolor piona zajmujacego miejsce jest kolorem przeciwnika
-                                if((wartosc_sprawdzanego_pola >> 5 & 0b1) == kolor_przeciwnika){
-                                    //sprawdzamy czy kolejne pole za nim jest puste.
-                                    if(!((wspy_piona-2 < 0) | (wspx_piona-2<0))) {
-                                        sprawdzane_pole = ((wspy_piona - 2) << 3) + wspx_piona - 2;
-                                        wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-                                        if(wartosc_sprawdzanego_pola == -1){
-                                            //mamy mus bicia
-                                            mus_bicia = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        //sprawdzamy prawy skos w gore
-                        //sprawdzamy, czy nie wychodzi poza plansze
-                        if(!((wspy_piona+1 > 7) | (wspx_piona+1 > 7))){
-                            sprawdzane_pole = ((wspy_piona+1) << 3) + wspx_piona+1;
-                            wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-
-                            if(wartosc_sprawdzanego_pola == -1){
-                                //jesli pole puste, mamy mozliwy ruch
-                                mozliwy_ruch = true;
-                            } else {
-                                //sprawdzamy czy kolor piona zajmujacego miejsce jest kolorem przeciwnika
-                                if((wartosc_sprawdzanego_pola >> 5 & 0b1) == kolor_przeciwnika){
-                                    //sprawdzamy czy kolejne pole za nim jest puste.
-                                    if(!((wspy_piona+2 > 7) | (wspx_piona+2 > 7))) {
-                                        sprawdzane_pole = ((wspy_piona + 2) << 3) + wspx_piona + 2;
-                                        wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-                                        if(wartosc_sprawdzanego_pola == -1){
-                                            //mamy mus bicia
-                                            mus_bicia = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        //sprawdzamy prawy skos w dol
-                        //sprawdzamy, czy nie wychodzi poza plansze
-                        if(!((wspy_piona-1 < 0) | (wspx_piona+1 > 7))){
-                            sprawdzane_pole = ((wspy_piona-1) << 3) + wspx_piona+1;
-                            wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-
-                            if(wartosc_sprawdzanego_pola == -1){
-                                //jesli pole puste, mamy mozliwy ruch
-                                mozliwy_ruch = true;
-                            } else {
-                                //sprawdzamy czy kolor piona zajmujacego miejsce jest kolorem przeciwnika
-                                if((wartosc_sprawdzanego_pola >> 5 & 0b1) == kolor_przeciwnika){
-                                    //sprawdzamy czy kolejne pole za nim jest puste.
-                                    if(!((wspy_piona+2 > 7) | (wspx_piona+2 > 7))) {
-                                        sprawdzane_pole = ((wspy_piona - 2) << 3) + wspx_piona + 2;
-                                        wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
-                                        if(wartosc_sprawdzanego_pola == -1){
-                                            //mamy mus bicia
-                                            mus_bicia = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-
-                    } else {
-                        //sprawdzamy czy bicie dla damki
-                        //TODO
-                    }
-
-                }
-
             }
 
             //wydrukować planszę, poinformować o kolejce
@@ -390,8 +184,6 @@ public
             //informacja o możliwości ruchu/musie bicia
             if(mus_bicia){
                 System.out.println("Masz bicie, które musisz wykonać");
-                //dodatkowo konieczne będzie powtórzenie ruchu (już po wykonaniu bicia)
-                zmiana_gracza = true;
             } else if(mozliwy_ruch){
                 System.out.println("Masz możliwy ruch do wykoniania");
             }
@@ -409,129 +201,219 @@ public
             int zawartosc_pola_docelowego = pobierz_zawartosc_pola(pole_docelowe);
 
 
-            //sprawdzamy czy to nie puste pole
-            if(wybrany_pion != -1){
+            //sprawdzamy czy to nie puste pole i czy pion jest w grze
+            if(wybrany_pion != -1 & ((wybrany_pion>>8 & 0b1) != 0)){
                 //sprawdzamy czy to nie pion przeciwnika
                 if((wybrany_pion >> 6 & 0b1) != kolor_przeciwnika){
-                    //warunek dla piona
-                    if((wybrany_pion >> 7 & 0b1) == 0){
-                        //pole docelowe jest puste, a gracz nie ma musu bicia
-                        if(zawartosc_pola_docelowego == -1 & !mus_bicia){
-                            //sprawdzamy czy dlugosc ruchu wynosi 1x1 i czy jest we wlasciwym kierunku
+                    //sprawdzamy czy mus bicia
+                    if(mus_bicia){
+                        //bicie dla piona
+                        if((wybrany_pion >> 7 & 0b1) == 0){
+                            int wspx_start = pole_startowe & 0b111;
+                            int wspy_start = (pole_startowe >> 3) & 0b111;
+                            int wspx_koniec = pole_docelowe & 0b111;
+                            int wspy_koniec = (pole_docelowe >> 3) & 0b111;
 
-                            //kolej białych, ruszamy się w dół
-                            if(kolej_gracza == 1){
-                                //spradzenie przemieszczenia względem osi y
-                                switch((pole_docelowe >> 3 & 0b111) - (pole_startowe >> 3 & 0b111)){
-                                    case -1:
-                                        //prawidłowy ruch, sprawdzanie względem osi x
-                                        switch((pole_docelowe & 0b111) - (pole_startowe & 0b111)){
-                                            case -1, 1:
-                                                //wykonanie ruchu na puste pole
-                                                for(int i=0; i<7; i++){
-                                                    //szukamy piona w longach
-                                                    if((((biale_piony_1 >> (9*i)) & 0b111111) == pole_startowe)) {
-                                                        //'wciskamy' wartosc nowego pola
-                                                        biale_piony_1 = biale_piony_1 - ((long)pole_startowe << (i*9));
-                                                        biale_piony_1 = biale_piony_1 + ((long)pole_docelowe << (i*9));
-                                                        // po ruchu na puste pole gracz kończy ruch.
-                                                        // TODO dodać mechanike zmiany w damke
-                                                        zmiana_gracza = false;
-                                                    }
-                                                    if((((biale_piony_2 >> (9*i)) & 0b111111) == pole_startowe)){
-                                                        biale_piony_2 = biale_piony_2 - ((long)pole_startowe << (i*9));
-                                                        biale_piony_2 = biale_piony_2 + ((long)pole_docelowe << (i*9));
-                                                        // po ruchu na puste pole gracz kończy ruch.
-                                                        // TODO dodać mechanike zmiany w damke
-                                                        zmiana_gracza = false;
-                                                    }
-                                                }
-                                                break;
-                                            default:
-                                                System.out.println("Zbyt długi ruch po współrzędnej X jak na piona");
-                                                zmiana_gracza = true;
-                                                break;
+                            //czy ruch o 2x2 (bicie dla piona)
+                            if(Math.abs(wspx_koniec-wspx_start)!=2 | Math.abs(wspy_koniec-wspy_start)!=2){
+                                System.out.println("Ruch o nieprawidłowej długości.");
+                                ten_sam_gracz = true;
+                            }
+                            //ruch nie kończy się na pustym polu
+                            else if(zawartosc_pola_docelowego != -1) {
+                                System.out.println("Bicie musi kończyć się na pustym polu");
+                                ten_sam_gracz = true;
+                            } else {
+                                int pole_bitego_piona = (wspx_koniec-wspx_start)/2 + wspx_start;
+                                pole_bitego_piona = pole_bitego_piona + (((wspy_koniec-wspy_start)/2 + wspy_start) << 3);
+                                int bity_pion = pobierz_zawartosc_pola(pole_bitego_piona);
+                                if(bity_pion == -1){
+                                    System.out.println("Nie wolno bić pustego pola!");
+                                } else if ((bity_pion >> 6 & 0b1) != kolor_przeciwnika){
+                                    System.out.println(bity_pion >> 6 & 0b1);
+                                    System.out.println(kolor_przeciwnika);
+                                    System.out.println(bity_pion);
+                                    System.out.println("Nie wolno bić własnego piona!");
+                                } else {
+                                    //wykonujemy bicie - czarne
+                                    if((wybrany_pion >> 6 & 0b1) == 0){
+                                        //przenosimy własny pion
+                                        for(int i=0; i<7; i++){
+                                            //szukamy piona w longach
+                                            if((((czarne_piony_1 >> (9*i)) & 0b111111) == pole_startowe)) {
+                                                //'wciskamy' wartosc nowego pola
+                                                czarne_piony_1 = czarne_piony_1 - ((long)pole_startowe << (i*9));
+                                                czarne_piony_1 = czarne_piony_1 + ((long)pole_docelowe << (i*9));
+                                            }
+                                            if((((czarne_piony_2 >> (9*i)) & 0b111111) == pole_startowe)){
+                                                czarne_piony_2 = czarne_piony_2 - ((long)pole_startowe << (i*9));
+                                                czarne_piony_2 = czarne_piony_2 + ((long)pole_docelowe << (i*9));
+                                            }
                                         }
-                                        break;
-                                    case 1:
-                                        System.out.println("Próbujesz ruszyć się w złą stronę");
-                                        zmiana_gracza = true;
-                                        break;
-                                    default:
-                                        System.out.println("Zbyt długi ruch po współrzędnej Y jak na piona");
-                                        zmiana_gracza = true;
-                                        break;
+                                        //bijemy pion przeciwnika
+                                        for(int i=0; i<7; i++){
+                                            //szukamy piona w longach
+                                            if((((biale_piony_1 >> (9*i)) & 0b111111) == (bity_pion&0b111111))) {
+                                                //zmieniamy stan piona
+                                                biale_piony_1 = biale_piony_1 - ((long)0b1 << (i*9+8));
+                                            }
+                                            if((((biale_piony_2 >> (9*i)) & 0b111111) == (bity_pion&0b111111))){
+                                                biale_piony_2 = biale_piony_2 - ((long)0b1 << (i*9+8));
+                                            }
+                                        }
+                                    }
+                                    //biją białe
+                                    else {
+                                        //przenosimy własny pion
+                                        for(int i=0; i<7; i++){
+                                            //szukamy piona w longach
+                                            if((((biale_piony_1 >> (9*i)) & 0b111111) == pole_startowe)) {
+                                                //'wciskamy' wartosc nowego pola
+                                                biale_piony_1 = biale_piony_1 - ((long)pole_startowe << (i*9));
+                                                biale_piony_1 = biale_piony_1 + ((long)pole_docelowe << (i*9));
+                                            }
+                                            if((((biale_piony_2 >> (9*i)) & 0b111111) == pole_startowe)){
+                                                biale_piony_2 = biale_piony_2 - ((long)pole_startowe << (i*9));
+                                                biale_piony_2 = biale_piony_2 + ((long)pole_docelowe << (i*9));
+                                            }
+                                        }
+                                        //bijemy pion przeciwnika
+                                        for(int i=0; i<7; i++){
+                                            //szukamy piona w longach
+                                            if((((czarne_piony_1 >> (9*i)) & 0b111111) == (bity_pion&0b111111))) {
+                                                //zmieniamy stan piona
+                                                czarne_piony_1 = czarne_piony_1 - ((long)0b1 << (i*9+8));
+                                            }
+                                            if((((czarne_piony_2 >> (9*i)) & 0b111111) == (bity_pion&0b111111))){
+                                                czarne_piony_2 = czarne_piony_2 - ((long)0b1 << (i*9+8));
+                                            }
+                                        }
+
+                                    }
+                                    //TODO sprawdzenie czy na nowym polu jest bicie. jak tak, zapętlenie. mus bicia na tym samym pionie.
                                 }
                             }
-
-                            //kolej czarnych, ruszamy się w górę
-                            if(kolej_gracza == 2){
-                                //spradzenie przemieszczenia względem osi y
-                                switch((pole_docelowe >> 3 & 0b111) - (pole_startowe >> 3 & 0b111)){
-                                    case 1:
-                                        //prawidłowy ruch, sprawdzanie względem osi x
-                                        switch((pole_docelowe & 0b111) - (pole_startowe & 0b111)){
-                                            case -1, 1:
-                                                //wykonanie ruchu na puste pole
-                                                for(int i=0; i<7; i++){
-                                                    //szukamy piona w longach
-                                                    if((((czarne_piony_1 >> (9*i)) & 0b111111) == pole_startowe)) {
-                                                        //'wciskamy' wartosc nowego pola
-                                                        czarne_piony_1 = czarne_piony_1 - ((long)pole_startowe << (i*9));
-                                                        czarne_piony_1 = czarne_piony_1 + ((long)pole_docelowe << (i*9));
-                                                        // po ruchu na puste pole gracz kończy ruch.
-                                                        // TODO dodać mechanike zmiany w damke
-                                                    }
-                                                    if((((czarne_piony_2 >> (9*i)) & 0b111111) == pole_startowe)){
-                                                        czarne_piony_2 = czarne_piony_2 - ((long)pole_startowe << (i*9));
-                                                        czarne_piony_2 = czarne_piony_2 + ((long)pole_docelowe << (i*9));
-                                                        // po ruchu na puste pole gracz kończy ruch.
-                                                        // TODO dodać mechanike zmiany w damke
-                                                    }
-                                                }
-                                                break;
-                                            default:
-                                                System.out.println("Zbyt długi ruch po współrzędnej X jak na piona");
-                                                zmiana_gracza = true;
-                                                break;
-                                        }
-                                        break;
-                                    case -1:
-                                        System.out.println("Próbujesz ruszyć się w złą stronę");
-                                        zmiana_gracza = true;
-                                        break;
-                                    default:
-                                        System.out.println("Zbyt długi ruch po współrzędnej Y jak na piona");
-                                        zmiana_gracza = true;
-                                        break;
-                                }
-                            }
-                        } else if (mus_bicia){
-                            System.out.println("Wybrany ruch nie jest biciem.");
-                            zmiana_gracza = true;
                         } else {
-                            //TODO dla bicia piona
+                            //TODO dla damki
                         }
-                    } else {
-                        //TODO dla damki
                     }
+                    //ruch na puse pole
+                    else {
+                        //warunek dla piona
+                        if((wybrany_pion >> 7 & 0b1) == 0){
+                            //pole docelowe jest puste, a gracz nie ma bicia
+                            if(zawartosc_pola_docelowego == -1){
+                                //sprawdzamy czy dlugosc ruchu wynosi 1x1 i czy jest we wlasciwym kierunku
+                                //kolej białych, ruszamy się w dół
+                                if(kolej_gracza == 1){
+                                    //spradzenie przemieszczenia względem osi y
+                                    switch((pole_docelowe >> 3 & 0b111) - (pole_startowe >> 3 & 0b111)){
+                                        case -1:
+                                            //prawidłowy ruch, sprawdzanie względem osi x
+                                            switch((pole_docelowe & 0b111) - (pole_startowe & 0b111)){
+                                                case -1, 1:
+                                                    //wykonanie ruchu na puste pole
+                                                    for(int i=0; i<7; i++){
+                                                        //szukamy piona w longach
+                                                        if((((biale_piony_1 >> (9*i)) & 0b111111) == pole_startowe)) {
+                                                            //'wciskamy' wartosc nowego pola
+                                                            biale_piony_1 = biale_piony_1 - ((long)pole_startowe << (i*9));
+                                                            biale_piony_1 = biale_piony_1 + ((long)pole_docelowe << (i*9));
+                                                            // po ruchu na puste pole gracz kończy ruch.
+                                                            // TODO dodać mechanike zmiany w damke
+                                                            ten_sam_gracz = false;
+                                                        }
+                                                        if((((biale_piony_2 >> (9*i)) & 0b111111) == pole_startowe)){
+                                                            biale_piony_2 = biale_piony_2 - ((long)pole_startowe << (i*9));
+                                                            biale_piony_2 = biale_piony_2 + ((long)pole_docelowe << (i*9));
+                                                            // po ruchu na puste pole gracz kończy ruch.
+                                                            // TODO dodać mechanike zmiany w damke
+                                                            ten_sam_gracz = false;
+                                                        }
+                                                    }
+                                                    break;
+                                                default:
+                                                    System.out.println("Zbyt długi ruch po współrzędnej X jak na piona");
+                                                    ten_sam_gracz = true;
+                                                    break;
+                                            }
+                                            break;
+                                        case 1:
+                                            System.out.println("Próbujesz ruszyć się w złą stronę");
+                                            ten_sam_gracz = true;
+                                            break;
+                                        default:
+                                            System.out.println("Zbyt długi ruch po współrzędnej Y jak na piona");
+                                            ten_sam_gracz = true;
+                                            break;
+                                    }
+                                }
+
+                                //kolej czarnych, ruszamy się w górę
+                                if(kolej_gracza == 2){
+                                    //spradzenie przemieszczenia względem osi y
+                                    switch((pole_docelowe >> 3 & 0b111) - (pole_startowe >> 3 & 0b111)){
+                                        case 1:
+                                            //prawidłowy ruch, sprawdzanie względem osi x
+                                            switch((pole_docelowe & 0b111) - (pole_startowe & 0b111)){
+                                                case -1, 1:
+                                                    //wykonanie ruchu na puste pole
+                                                    for(int i=0; i<7; i++){
+                                                        //szukamy piona w longach
+                                                        if((((czarne_piony_1 >> (9*i)) & 0b111111) == pole_startowe)) {
+                                                            //'wciskamy' wartosc nowego pola
+                                                            czarne_piony_1 = czarne_piony_1 - ((long)pole_startowe << (i*9));
+                                                            czarne_piony_1 = czarne_piony_1 + ((long)pole_docelowe << (i*9));
+                                                            // po ruchu na puste pole gracz kończy ruch.
+                                                            ten_sam_gracz = false;
+                                                            // TODO dodać mechanike zmiany w damke
+                                                        }
+                                                        if((((czarne_piony_2 >> (9*i)) & 0b111111) == pole_startowe)){
+                                                            czarne_piony_2 = czarne_piony_2 - ((long)pole_startowe << (i*9));
+                                                            czarne_piony_2 = czarne_piony_2 + ((long)pole_docelowe << (i*9));
+                                                            ten_sam_gracz = false;
+                                                            // po ruchu na puste pole gracz kończy ruch.
+                                                            // TODO dodać mechanike zmiany w damke
+                                                        }
+                                                    }
+                                                    break;
+                                                default:
+                                                    System.out.println("Zbyt długi ruch po współrzędnej X jak na piona");
+                                                    ten_sam_gracz = true;
+                                                    break;
+                                            }
+                                            break;
+                                        case -1:
+                                            System.out.println("Próbujesz ruszyć się w złą stronę");
+                                            ten_sam_gracz = true;
+                                            break;
+                                        default:
+                                            System.out.println("Zbyt długi ruch po współrzędnej Y jak na piona");
+                                            ten_sam_gracz = true;
+                                            break;
+                                    }
+                                }
+                            }
+                            else {
+                                System.out.println("Próbujesz ruszyć sie na pole, na którym jest pion!");
+                            }
+                        } else {
+                            //TODO dla damki
+                        }
+                    }
+
                 } else {
                     System.out.println("Wybrany przez Ciebie pion to pion przeciwnika!");
-                    zmiana_gracza = true;
+                    ten_sam_gracz = true;
                 }
             } else {
                 System.out.println("Wybrane przez Ciebie pole nie zawiera piona. Spróbuj ponownie.");
-                zmiana_gracza = true;
+                ten_sam_gracz = true;
             }
-
-
-            //wykonać ruch lub powtórzyć pętlę dla gracza
-
 
             //TODO remisy
         }
     }
-
 
     public static void wydrukuj_plansze(){
         //wsp y
@@ -722,12 +604,12 @@ public
         return false;
     }
 
-    public static boolean czy_bicie_pion(int pion, int kolor_przeciwnika){
+    public static boolean czy_bicie(int pion, int kolor_przeciwnika){
         if((pion >> 8 & 0b1) != 0){
             //wyciągamy pole
-            int pole_piona_1 = pion & 0b111111;
-            int wspx_piona = pole_piona_1 & 0b111;
-            int wspy_piona = (pole_piona_1 >> 3) & 0b111;
+            int pole_piona = pion & 0b111111;
+            int wspx_piona = pole_piona & 0b111;
+            int wspy_piona = (pole_piona >> 3) & 0b111;
 
             //sprawdzamy czy pion
             if((pion >> 7 & 0b1) == 0){
@@ -803,12 +685,11 @@ public
 
                 //sprawdzamy prawy skos w dol
                 //sprawdzamy, czy nie wychodzi poza plansze
-
                 if(!((wspy_piona-1 < 0) | (wspx_piona+1 > 7))){
                     sprawdzane_pole = ((wspy_piona-1) << 3) + wspx_piona+1;
                     wartosc_sprawdzanego_pola = pobierz_zawartosc_pola(sprawdzane_pole);
 
-                    if(wartosc_sprawdzanego_pola == -1){
+                    if(wartosc_sprawdzanego_pola != -1){
                         //sprawdzamy czy kolor piona zajmujacego miejsce jest kolorem przeciwnika
                         if((wartosc_sprawdzanego_pola >> 5 & 0b1) == kolor_przeciwnika){
                             //sprawdzamy czy kolejne pole za nim jest puste.
