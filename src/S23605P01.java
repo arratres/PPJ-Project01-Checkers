@@ -230,9 +230,6 @@ public
                                 if(bity_pion == -1){
                                     System.out.println("Nie wolno bić pustego pola!");
                                 } else if ((bity_pion >> 6 & 0b1) != kolor_przeciwnika){
-                                    System.out.println(bity_pion >> 6 & 0b1);
-                                    System.out.println(kolor_przeciwnika);
-                                    System.out.println(bity_pion);
                                     System.out.println("Nie wolno bić własnego piona!");
                                 } else {
                                     //wykonujemy bicie - czarne
