@@ -1,9 +1,9 @@
-Projekt pierwszy z przedmiotu PPJ - podstawy programowania w javie. 
+First Uni project for PPJ - Basic Programming in Java
 
-# Warcaby w Javie
+# Checkers in Java
 
-zasady gry zgodne ze wikipedią https://pl.wikipedia.org/wiki/Warcaby
+Rules according to wiki page https://en.wikipedia.org/wiki/checkers
 
-informacje o pionkach przechowywać można tylko w dwóch zmiennych long na gracza
+all data has to be stored in 2 longs per player, 4 in total
 
-detale w pliku .pdf
+details (in polish) in .pdf file
